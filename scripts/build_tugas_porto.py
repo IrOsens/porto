@@ -27,7 +27,11 @@ PROJECTS = [
 ]
 
 OPENING = [
-    ("Identitas", "Portofolio Game Developer", ["Riovaldo Arion Darendra", "D4 Animasi · Universitas Negeri Malang", "NIM: __________   Kelas: __________"]),
+    ("Tugas Portofolio", "Riovaldo Arion Darendra", [
+        "Game Developer · Losi Studio",
+        "Mahasiswa tingkat akhir D4 Animasi · Universitas Negeri Malang · IPK 3,79",
+        "Saya mengembangkan gim Roblox dan prototipe Unity, dengan fokus pada mekanik gameplay menggunakan Lua dan C#.",
+    ]),
     ("Jenis portofolio", "Dua cara melihat karya saya", [
         "Playable Prototype — itch.io dan Roblox memberi akses ke karya yang dapat dicoba. Lantai Tujuh menunjukkan eksplorasi dan teka-teki, sementara Hidden Gem menggunakan gameplay untuk mengenalkan budaya Indonesia.",
         "Repository Program — repo Spider Robot menunjukkan kode firmware, dokumentasi kendali dan perakitan, serta demo robot. Semester Terakhir memperlihatkan perkembangan prototipe Unity yang masih dikerjakan.",
@@ -64,17 +68,22 @@ def build_web(records):
         options.append(f'<option value="{number}">{number:02} — {escape(title)}</option>')
         copy = "".join(f"<p>{escape(line)}</p>" for line in paragraphs)
         visual = ""
+        layout = "project" if media else "editorial"
+        if number == 1:
+            layout = "identity"
+            visual = '<img src="../assets/images/profile-pic.png" alt="Foto Riovaldo Arion Darendra" fetchpriority="high">'
         if media:
             source = "../" + media_path(media)
             if media.endswith(".png"):
                 visual = f'<img src="{source}" alt="Gambar resmi {escape(title)}">'
             else:
-                visual = f'<video controls playsinline preload="none" data-src="{source}" aria-label="Demo {escape(title)}"></video>'
+                poster = f"posters/{Path(media).stem}.webp"
+                visual = f'<video controls playsinline preload="none" poster="{poster}" data-src="{source}" aria-label="Demo {escape(title)}"></video>'
         if link:
             action = "Buka repository" if "github.com" in link else "Buka halaman proyek"
             copy += f'<a class="action" href="{escape(link)}" target="_blank" rel="noopener">{action} ↗</a>'
         deck.append(f"""
-        <section class="slide {'project' if media else ''}" id="slide-{number}" aria-labelledby="title-{number}">
+        <section class="slide {layout}" id="slide-{number}" aria-labelledby="title-{number}">
           <div class="copy"><p class="label">{label}</p><h2 id="title-{number}" tabindex="-1">{escape(title)}</h2>{copy}</div>
         {f'<div class="media">{visual}</div>' if visual else ''}
         </section>""")
@@ -92,15 +101,21 @@ def build_web(records):
 <div class="shell">
   <header class="bar">
     <a class="brand" href="../">← Portofolio utama</a>
-    <button id="motion" type="button" hidden>Jeda efek</button>
-    <a class="download" href="portofolio-riovaldo.pptx" download>Unduh PPTX ↓</a>
+    <div class="tools">
+      <button id="motion" type="button" hidden>Jeda efek</button>
+      <a class="download" href="portofolio-riovaldo.pptx" download>Unduh PPTX ↓</a>
+    </div>
   </header>
   <main id="deck" aria-label="Presentasi tugas portofolio">{''.join(deck)}
   </main>
   <nav id="navigation" class="bar" aria-label="Navigasi slide" hidden>
     <button id="previous" type="button">← <span>Sebelumnya</span></button>
-    <label>Slide <select id="slide-picker">{''.join(options)}</select></label>
+    <div class="position">
+      <output id="counter" for="slide-picker" aria-live="polite"></output>
+      <select id="slide-picker" aria-label="Pilih slide">{''.join(options)}</select>
+    </div>
     <button id="next" type="button"><span>Berikutnya</span> →</button>
+    <progress id="progress" aria-label="Posisi slide" max="{len(records)}" value="1"></progress>
   </nav>
 </div>
 </body>
@@ -120,12 +135,20 @@ def text(slide, value, x, y, width, height, size, color, *, bold=False):
     run.font.color.rgb = RGBColor.from_string(color)
     return run
 
+PREVIEW_SECONDS = {
+    "precision-shooter.mp4": "12",
+    "parkour-shooter.mp4": "12",
+    "semester-terakhir.mp4": "25",
+}
+
 def build_pptx(records):
     presentation = Presentation()
     presentation.slide_width = Inches(13.333)
     presentation.slide_height = Inches(7.5)
     presentation.core_properties.title = "Portofolio Game Developer"
     presentation.core_properties.author = "Riovaldo Arion Darendra"
+    posters = OUT / "posters"
+    posters.mkdir(exist_ok=True)
     with TemporaryDirectory() as temporary:
         for number, (label, title, paragraphs, media, link) in enumerate(records, 1):
             slide = presentation.slides.add_slide(presentation.slide_layouts[6])
@@ -138,16 +161,25 @@ def build_pptx(records):
                 text(slide, paragraphs[1], .6, 3.17, 4.25, 2.5, 22, "F3F9F5")
                 poster = Path(temporary) / "preview.jpg"
                 source = ROOT / media_path(media)
-                seek = [] if media.endswith(".png") else ["-ss", "1"]
+                seek = [] if media.endswith(".png") else ["-ss", PREVIEW_SECONDS.get(media, "1")]
                 run(["ffmpeg", "-loglevel", "error", "-y", *seek, "-i", str(source),
                      "-frames:v", "1", "-vf",
                      "scale=960:540:force_original_aspect_ratio=decrease,pad=960:540:(ow-iw)/2:(oh-ih)/2,setsar=1",
                      str(poster)], check=True)
+                if not media.endswith(".png"):
+                    run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(poster),
+                         "-vf", "scale=800:-1", "-quality", "75",
+                         str(posters / f"{Path(media).stem}.webp")], check=True)
                 image = slide.shapes.add_picture(str(poster), Inches(5.18), Inches(2.22), width=Inches(7.55))
                 destination = link if media.endswith(".png") else f"{SITE}tugas-porto/#slide-{number}"
                 image.click_action.hyperlink.address = destination
                 text(slide, "Klik gambar untuk membuka " + ("halaman proyek" if media.endswith(".png") else "demo"),
                      5.12, 6.5, 7.55, .35, 13, "9BFFC1").hyperlink.address = destination
+            elif number == 1:
+                for index, line in enumerate(paragraphs):
+                    text(slide, line, .6, 2.22 + index * 1.1, 7.8, 1.05, 22, "F3F9F5")
+                slide.shapes.add_picture(str(ROOT / "assets/images/profile-pic.png"),
+                                         Inches(9.3), Inches(2.2), height=Inches(3.55))
             else:
                 for index, line in enumerate(paragraphs):
                     text(slide, line, .6, 2.22 + index * 1.1, 11.7, 1.05, 22, "F3F9F5")
