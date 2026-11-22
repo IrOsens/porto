@@ -88,7 +88,7 @@ const alphabet = "0123456789ABCDEF<>:[]";
 const cell = 19;
 let streams = [];
 let timer;
-let paused = reducedMotion.matches;
+let paused = false;
 
 function resizeMatrix() {
   canvas.width = innerWidth;

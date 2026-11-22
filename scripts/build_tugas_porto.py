@@ -94,7 +94,7 @@ def build_web(records):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tugas Portofolio · Riovaldo Arion Darendra</title>
 <link rel="stylesheet" href="slides.css?v=aurora2">
-<script src="slides.js?v=aurora2" defer></script>
+<script src="slides.js?v=aurora3" defer></script>
 </head>
 <body>
 <canvas id="matrix" aria-hidden="true"></canvas>
