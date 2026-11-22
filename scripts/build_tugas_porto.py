@@ -93,8 +93,8 @@ def build_web(records):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tugas Portofolio · Riovaldo Arion Darendra</title>
-<link rel="stylesheet" href="slides.css">
-<script src="slides.js" defer></script>
+<link rel="stylesheet" href="slides.css?v=aurora1">
+<script src="slides.js?v=aurora1" defer></script>
 </head>
 <body>
 <canvas id="matrix" aria-hidden="true"></canvas>
@@ -102,6 +102,7 @@ def build_web(records):
   <header class="bar">
     <a class="brand" href="../">← Portofolio utama</a>
     <div class="tools">
+      <button id="fullscreen" type="button" hidden>Layar penuh</button>
       <button id="motion" type="button" hidden>Jeda efek</button>
       <a class="download" href="portofolio-riovaldo.pptx" download>Unduh PPTX ↓</a>
     </div>

@@ -58,31 +58,59 @@ const canvas = document.querySelector("#matrix");
 const context = canvas.getContext("2d");
 const motion = document.querySelector("#motion");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const symbols = "01ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ<>/[]";
-const cell = 18;
-let columns = [];
+const fullscreen = document.querySelector("#fullscreen");
+if (document.fullscreenEnabled) {
+  fullscreen.hidden = false;
+  fullscreen.addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      fullscreen.hidden = true;
+    }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    fullscreen.textContent = document.fullscreenElement ? "Keluar layar penuh" : "Layar penuh";
+  });
+}
+
+const alphabet = "0123456789ABCDEF<>:[]";
+const cell = 19;
+let streams = [];
 let timer;
 let paused = false;
 
 function resizeMatrix() {
   canvas.width = innerWidth;
   canvas.height = innerHeight;
-  columns = Array.from({ length: Math.ceil(canvas.width / cell) },
-    () => Math.floor(Math.random() * (canvas.height / cell + 24)) - 24);
+  const rows = Math.ceil(canvas.height / cell);
+  streams = Array.from({ length: Math.ceil(canvas.width / cell) }, (_, index) => ({
+    x: index * cell,
+    head: Math.random() * (rows + 16),
+    speed: .24 + Math.random() * .6,
+    trail: 5 + Math.floor(Math.random() * 12),
+    symbols: Array.from({ length: 32 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]),
+  }));
+  drawMatrix();
 }
 
 function drawMatrix() {
-  context.fillStyle = "rgba(7,11,9,.17)";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, canvas.width, canvas.height);
   context.font = "14px monospace";
-  columns.forEach((row, index) => {
-    const glyph = symbols[Math.floor(Math.random() * symbols.length)];
-    context.fillStyle = "#39da80";
-    context.fillText(glyph, index * cell, (row - 1) * cell);
-    context.fillStyle = "#a8ffcf";
-    context.fillText(glyph, index * cell, row * cell);
-    columns[index] = row * cell > canvas.height && Math.random() > .91 ? 0 : row + 1;
-  });
+  const rows = Math.ceil(canvas.height / cell);
+  for (const stream of streams) {
+    const row = Math.floor(stream.head);
+    for (let offset = stream.trail; offset >= 0; offset--) {
+      const y = (row - offset) * cell;
+      if (y < 0 || y > canvas.height + cell) continue;
+      context.globalAlpha = .56 * (1 - offset / stream.trail);
+      context.fillStyle = offset === 0 ? "#d0fff5" : "#24eca3";
+      const glyph = stream.symbols[(row - offset + 32) % 32];
+      context.fillText(glyph, stream.x, y);
+    }
+    stream.head = (stream.head + stream.speed) % (rows + stream.trail);
+  }
+  context.globalAlpha = 1;
 }
 
 function syncMotion() {
