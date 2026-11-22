@@ -69,6 +69,12 @@ const context = canvas.getContext("2d");
 const motion = document.querySelector("#motion");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const fullscreen = document.querySelector("#fullscreen");
+function updateIcon(button, label, symbol) {
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.firstElementChild.textContent = symbol;
+}
+
 if (document.fullscreenEnabled) {
   fullscreen.hidden = false;
   fullscreen.addEventListener("click", async () => {
@@ -80,7 +86,7 @@ if (document.fullscreenEnabled) {
     }
   });
   document.addEventListener("fullscreenchange", () => {
-    fullscreen.textContent = document.fullscreenElement ? "Keluar layar penuh" : "Layar penuh";
+    updateIcon(fullscreen, document.fullscreenElement ? "Keluar layar penuh" : "Layar penuh", document.fullscreenElement ? "↙" : "⛶");
   });
 }
 
@@ -126,7 +132,7 @@ function drawMatrix() {
 function syncMotion() {
   clearInterval(timer);
   motion.hidden = false;
-  motion.textContent = paused ? "Lanjutkan efek" : "Jeda efek";
+  updateIcon(motion, paused ? "Lanjutkan efek" : "Jeda efek", paused ? "▶" : "Ⅱ");
   if (!paused && !document.hidden) {
     drawMatrix();
     timer = setInterval(drawMatrix, 42);
