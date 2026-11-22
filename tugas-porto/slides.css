@@ -78,7 +78,18 @@ h2:focus { outline: none; }
 .project h2 { font-size: 4.65cqw; }
 .media { width: 100%; min-width: 0; aspect-ratio: 16 / 9; }
 .media :is(img, video) { width: 100%; height: 100%; display: block; object-fit: contain; }
-.project .media { background: #080913; box-shadow: 0 1.5cqw 5cqw -2cqw #af5bff88; }
+.project .media {
+  --radius: clamp(10px, 1.4cqw, 24px);
+  width: calc(100% - 1.5cqw);
+  padding: 2px;
+  border-radius: var(--radius);
+  background: linear-gradient(125deg, #94ffff, #426caa 38%, #604081 66%, #f1a2ff);
+  box-shadow: 0 0 1.4cqw #72eaff30, 0 1.2cqw 4cqw -1.1cqw #c159ff60;
+}
+.project .media > :is(video, img) {
+  border-radius: calc(var(--radius) - 2px);
+  background: #080913;
+}
 .identity .media {
   position: relative;
   aspect-ratio: auto;

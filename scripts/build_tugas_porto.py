@@ -78,7 +78,7 @@ def build_web(records):
                 visual = f'<img src="{source}" alt="Gambar resmi {escape(title)}">'
             else:
                 poster = f"posters/{Path(media).stem}.webp"
-                visual = f'<video controls playsinline preload="none" poster="{poster}" data-src="{source}" aria-label="Demo {escape(title)}"></video>'
+                visual = f'<video controls muted loop playsinline preload="none" poster="{poster}" data-src="{source}" aria-label="Demo {escape(title)}"></video>'
         if link:
             action = "Buka repository" if "github.com" in link else "Buka halaman proyek"
             copy += f'<a class="action" href="{escape(link)}" target="_blank" rel="noopener">{action} ↗</a>'
@@ -93,8 +93,8 @@ def build_web(records):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tugas Portofolio · Riovaldo Arion Darendra</title>
-<link rel="stylesheet" href="slides.css?v=aurora1">
-<script src="slides.js?v=aurora1" defer></script>
+<link rel="stylesheet" href="slides.css?v=aurora2">
+<script src="slides.js?v=aurora2" defer></script>
 </head>
 <body>
 <canvas id="matrix" aria-hidden="true"></canvas>

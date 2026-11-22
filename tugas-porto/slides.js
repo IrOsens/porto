@@ -8,7 +8,12 @@ let current = -1;
 
 function showSlide(index, focus = false) {
   if (index === current) return;
-  slides[current]?.querySelector("video")?.pause();
+  const previousVideo = slides[current]?.querySelector("video");
+  if (previousVideo) {
+    previousVideo.pause();
+    previousVideo.removeAttribute("src");
+    previousVideo.load();
+  }
   current = index;
   slides.forEach((slide, position) => {
     slide.hidden = position !== index;
@@ -16,7 +21,12 @@ function showSlide(index, focus = false) {
   });
   const slide = slides[index];
   const video = slide.querySelector("video");
-  if (video && !video.hasAttribute("src")) video.src = video.dataset.src;
+  if (video) {
+    if (!video.hasAttribute("src")) video.src = video.dataset.src;
+    video.muted = true;
+    // Native controls remain available when the browser blocks autoplay.
+    video.play().catch(() => {});
+  }
   picker.value = String(index + 1);
   counter.value = `${String(index + 1).padStart(2, "0")} / ${slides.length}`;
   progress.value = index + 1;
@@ -78,7 +88,7 @@ const alphabet = "0123456789ABCDEF<>:[]";
 const cell = 19;
 let streams = [];
 let timer;
-let paused = false;
+let paused = reducedMotion.matches;
 
 function resizeMatrix() {
   canvas.width = innerWidth;
@@ -87,7 +97,7 @@ function resizeMatrix() {
   streams = Array.from({ length: Math.ceil(canvas.width / cell) }, (_, index) => ({
     x: index * cell,
     head: Math.random() * (rows + 16),
-    speed: .24 + Math.random() * .6,
+    speed: .24 + Math.random() * .48,
     trail: 5 + Math.floor(Math.random() * 12),
     symbols: Array.from({ length: 32 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]),
   }));
@@ -101,7 +111,7 @@ function drawMatrix() {
   for (const stream of streams) {
     const row = Math.floor(stream.head);
     for (let offset = stream.trail; offset >= 0; offset--) {
-      const y = (row - offset) * cell;
+      const y = (stream.head - offset) * cell;
       if (y < 0 || y > canvas.height + cell) continue;
       context.globalAlpha = .56 * (1 - offset / stream.trail);
       context.fillStyle = offset === 0 ? "#d0fff5" : "#24eca3";
@@ -115,11 +125,11 @@ function drawMatrix() {
 
 function syncMotion() {
   clearInterval(timer);
-  motion.hidden = reducedMotion.matches;
+  motion.hidden = false;
   motion.textContent = paused ? "Lanjutkan efek" : "Jeda efek";
-  if (!paused && !reducedMotion.matches && !document.hidden) {
+  if (!paused && !document.hidden) {
     drawMatrix();
-    timer = setInterval(drawMatrix, 80);
+    timer = setInterval(drawMatrix, 42);
   }
 }
 
@@ -127,7 +137,10 @@ if (context) {
   resizeMatrix();
   syncMotion();
   window.addEventListener("resize", resizeMatrix);
-  reducedMotion.addEventListener("change", syncMotion);
+  reducedMotion.addEventListener("change", () => {
+    paused = reducedMotion.matches;
+    syncMotion();
+  });
   document.addEventListener("visibilitychange", syncMotion);
   motion.addEventListener("click", () => { paused = !paused; syncMotion(); });
 }
