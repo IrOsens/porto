@@ -24,6 +24,7 @@ PROJECTS = [
     ("Hotel Anomaly", "Losi Studio · Roblox", "Gim survival horror tentang sif malam di hotel yang dihuni anomali. Peran saya: Marketing, Assistant Programmer, dan QA.", "hotel-anomaly.webm", "https://www.roblox.com/games/70575351571626/HOTEL-ANOMALY"),
     ("Spider Robot", "Raspberry Pi Pico / Pico W · Repository Program", "Robot laba-laba dengan 12 servo yang bisa berjalan, berputar, dan menjaga posisi badan tetap rata. Versi Pico W juga mendukung kendali via browser ponsel.", "spider-pico.mp4", "https://github.com/IrOsens/spider-pico"),
     ("Semester Terakhir", "Unity / C# · In Progress", "RPG berlatar kampus Indonesia dengan eksplorasi, misi, dan pertarungan bergelombang yang memakai mekanik mengetik.", "semester-terakhir.mp4", ""),
+    ("Debug Grid", "Unity · Prototipe solo", "Pemain menyusun kartu perintah untuk menggerakkan tank berkaki empat di papan isometrik. Sebelum mengunci perintah, pemain memprediksi posisi akhir tank. Cuplikan ini menunjukkan kartu MAJU.", "debug-grid.mp4", "https://github.com/IrOsens/TA-project"),
 ]
 
 OPENING = [
